@@ -15,17 +15,29 @@ test() {
     # tesseract sim3.png out -l eng get.images
     # tesseract sim2.png out -l eng --dpi 200 get.images
 
-    # psm_array=(0 1 2 3 4 5 6 7 8 9 10 11 12 13)
-    psm_array=(4 11)
-    for psm in "${psm_array[@]}"; do
+    images=(sim1.png sim2.png sim3.png sim4.jpg)
+    for image in "${images[@]}"; do
         echo ""
-        echo "=====>psm: ${psm}" | tee -a $out_file
-        tesseract sim4.jpg - --psm "$psm" -l eng get.images | tee -a $out_file
+        echo "## image: ${image}" | tee -a $out_file
+        # psm_array=(0 1 2 3 4 5 6 7 8 9 10 11 12 13)
+        # psm_array=(4 11)
+        psm_array=(11)
+        for psm in "${psm_array[@]}"; do
+            echo ""
+            echo "### psm: ${psm}" | tee -a $out_file
+            configs=(
+                -c load_system_dawg=false
+                -c load_freq_dawg=false
+                -c tessedit_char_whitelist=0123456789
+            )
+            tesseract "$image" - --psm "$psm" -l eng "${configs[@]}" get.images | tee -a $out_file
+        done
     done
+
 }
 
-# test
-# exit
+test
+exit
 
 dirs=(
     ""
