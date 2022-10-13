@@ -1,6 +1,15 @@
 #!/bin/bash
-git clone https://github.com/tesseract-ocr/tessdata.git &
-git clone https://github.com/tesseract-ocr/tessdata_best.git &
-git clone https://github.com/tesseract-ocr/tessdata_fast.git &
+repos=(
+    'tessdata'
+    'tessdata_best'
+    'tessdata_fast'
+)
+
+for repo in "${repos[@]}"; do
+    if [[ "${repo}" != *"://"* ]]; then
+        repo="https://github.com/tesseract-ocr/$repo.git"
+    fi
+    git clone "$repo" --recurse-submodules &
+done
 
 wait && echo finished!
