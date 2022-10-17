@@ -4,7 +4,7 @@ shopt -s nullglob
 out_file=out.md
 echo >$out_file
 
-main() {
+test1() {
     # tesseract sim3.png - -l eng digits
     # tesseract eurotext.png - -l eng digits
     # tesseract sim4.jpg - --psm 11 -l eng | tee -a $out_file
@@ -13,7 +13,7 @@ main() {
 }
 
 test() {
-    export TESSDATA_PREFIX="$HOME/github/ocr/tessdata"
+    # export TESSDATA_PREFIX="$HOME/github/ocr/tessdata"
     # tesseract sim3.png out -l eng get.images
     # tesseract sim2.png out -l eng --dpi 200 get.images
 
@@ -24,7 +24,7 @@ test() {
     )
     for image in "${images[@]}"; do
         echo "" | tee -a $out_file
-        echo "## image: ${image}" | tee -a $out_file
+        echo "## image: ${image##*/}" | tee -a $out_file
         # psm_array=(0 1 2 3 4 5 6 7 8 9 10 11 12 13)
 
         # for multi line
@@ -55,24 +55,23 @@ test() {
 
 }
 
-test
-exit
-
-dirs=(
+repo_array=(
     ""
-    "$HOME/github/ocr/tessdata"
-    "$HOME/github/ocr/tessdata_fast"
-    "$HOME/github/ocr/tessdata_best"
+    "tessdata"
+    "tessdata_fast"
+    "tessdata_best"
 )
 
-for dir in "${dirs[@]}"; do
-    echo
-    echo "===> ${dir}" | tee -a $out_file
-    if [[ -n "${dir}" ]]; then
-        export TESSDATA_PREFIX=$dir
+for repo in "${repo_array[@]}"; do
+    repo_name=$repo
+    if [[ -n "${repo}" ]]; then
+        export TESSDATA_PREFIX=$repo
     else
         unset TESSDATA_PREFIX
+        repo_name="default"
     fi
+    echo
+    echo "# ${repo_name##*/}" | tee -a $out_file
 
-    main
+    test
 done
