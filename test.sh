@@ -1,6 +1,7 @@
 #!/bin/bash
 shopt -s nullglob
 
+tesseract_bin=tesseract
 out_file=out.md
 echo >$out_file
 
@@ -9,7 +10,7 @@ test1() {
     # tesseract eurotext.png - -l eng digits
     # tesseract sim4.jpg - --psm 11 -l eng | tee -a $out_file
     # tesseract sim2.png - --psm 11 -l eng | tee -a $out_file
-    tesseract sim1.png - --psm 11 -l eng | tee -a $out_file
+    $tesseract_bin sim1.png - --psm 11 -l eng | tee -a $out_file
 }
 
 test() {
@@ -17,14 +18,13 @@ test() {
     # tesseract sim3.png out -l eng get.images
     # tesseract sim2.png out -l eng --dpi 200 get.images
 
-  
     images=(
-        sim1.png sim2.png sim3.png sim4.jpg 
+        sim1.png sim2.png sim3.png sim4.jpg
         temp/extra/*.{jpg,png}
     )
     for image in "${images[@]}"; do
         echo "" | tee -a $out_file
-        echo "## image: ${image##*/}" | tee -a $out_file
+        echo "### image: ${image##*/}" | tee -a $out_file
         # psm_array=(0 1 2 3 4 5 6 7 8 9 10 11 12 13)
 
         # for multi line
@@ -38,16 +38,16 @@ test() {
         psm_array=(4 6 11)
         for psm in "${psm_array[@]}"; do
             echo "" | tee -a $out_file
-            echo "### psm: ${psm}" | tee -a $out_file
+            echo "#### psm: ${psm}" | tee -a $out_file
             echo '```' | tee -a $out_file
 
             configs=(
                 -c load_system_dawg=false
                 -c load_freq_dawg=false
-                -c tessedit_char_whitelist=0123456789
+                -c tessedit_char_whitelist=0123456789N
             )
-            tesseract "$image" - --psm "$psm" -l eng "${configs[@]}" get.images | tee -a $out_file
-            
+            $tesseract_bin "$image" - --psm "$psm" -l eng "${configs[@]}" get.images | tee -a $out_file
+
             echo '' | tee -a $out_file
             echo '```' | tee -a $out_file
         done
@@ -55,23 +55,41 @@ test() {
 
 }
 
-repo_array=(
-    ""
-    "tessdata"
-    "tessdata_fast"
-    "tessdata_best"
-)
+for_each_repo() {
+    repo_array=(
+        ""
+        "tessdata"
+        "tessdata_fast"
+        "tessdata_best"
+    )
 
-for repo in "${repo_array[@]}"; do
-    repo_name=$repo
-    if [[ -n "${repo}" ]]; then
-        export TESSDATA_PREFIX=$repo
-    else
-        unset TESSDATA_PREFIX
-        repo_name="default"
-    fi
-    echo
-    echo "# ${repo_name##*/}" | tee -a $out_file
+    for repo in "${repo_array[@]}"; do
+        repo_name=$repo
+        if [[ -n "${repo}" ]]; then
+            export TESSDATA_PREFIX=$repo
+        else
+            unset TESSDATA_PREFIX
+            repo_name="default"
+        fi
+        echo "" | tee -a $out_file
+        echo "## ${repo_name##*/}" | tee -a $out_file
 
-    test
-done
+        test
+    done
+}
+
+for_each_bin() {
+    bin_array=(
+        tesseract
+        # download from https://github.com/AlexanderP/tesseract-appimage/releases
+        temp/bin/*.AppImage
+    )
+    for tesseract_bin in "${bin_array[@]}"; do
+        echo "" | tee -a $out_file
+        echo "# ${tesseract_bin}" | tee -a $out_file
+        for_each_repo
+    done
+}
+
+for_each_bin
+
