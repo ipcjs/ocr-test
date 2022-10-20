@@ -43,8 +43,8 @@ process() {
             echo '```'
 
             configs=(
-                -c load_system_dawg=false
-                -c load_freq_dawg=false
+                -c load_system_dawg=F
+                -c load_freq_dawg=F
                 -c tessedit_char_whitelist=0123456789N
             )
             $tesseract_bin "$image" - --psm "$psm" -l eng "${configs[@]}" get.images
@@ -63,7 +63,7 @@ for_each_bin_and_repo() {
         temp/bin/*.AppImage
     )
     repo_array=(
-        ""
+        # ""
         "tessdata"
         "tessdata_fast"
         "tessdata_best"
@@ -82,7 +82,7 @@ for_each_bin_and_repo() {
                 unset TESSDATA_PREFIX
             fi
 
-            out_file="out_${version}_${repo_name}.md"
+            out_file="out/${version}_${repo_name}.md"
             echo "" > "$out_file"
             echo "- version: ${version}" | tee -a "$out_file"
             echo "- repo: $repo_name" | tee -a "$out_file"
